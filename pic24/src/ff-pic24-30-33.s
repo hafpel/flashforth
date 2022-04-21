@@ -667,9 +667,9 @@ write_buffer_to_imem_again:
         bra     wbtil31
 .endif
 wbtil3:
-.ifdecl PIC2433E
-        inc2    NVMADR
-        inc2    NVMADR
+.ifdecl NVMADR
+;        inc2    NVMADR
+;        inc2    NVMADR
 wbtil31:
         clr     W2
 .endif
@@ -683,7 +683,7 @@ wbtil4:
         dec     W4, W4
         bra     nz, wbtil3  ; write more rows for big flashblocks
 
-.ifdecl PIC2433E
+.ifdecl NVMADR
         mov     NVMADRU, W0
         mov     W0, TBLPAG
 .endif
@@ -1066,7 +1066,12 @@ PLL_NOT_IN_USE:
 .endif
         mov     #BAUD_DIV1, W0
         mov     W0, U1BRG
-        bset    U1STA, #UTXEN
+.ifdecl URXEN
+	bset	U1STA,#URXEN
+.endif
+.ifdecl UTXEN
+        bset    U1STA,#UTXEN
+.endif
 
 .ifdecl AUTOBAUD1
 .if (AUTOBAUD1 == 1)
@@ -1092,13 +1097,13 @@ WARM_ABAUD1:
         mov     #RPINR19VAL, W0
         mov     W0, RPINR19
 ; PIC2433HJFJ
-.ifdecl U1TXPIN
-        mov     #0x0003, W0         ; U1TX
-        mov.b   WREG, RPOR0+U1TXPIN
+.ifdecl U2TXPIN
+        mov     #0x0005, W0         ; U2TX
+        mov.b   WREG, RPOR0+U2TXPIN
 .endif
-.ifdecl U1_RPO_REGISTER
+.ifdecl U2_RPO_REGISTER
 ; PIC2433EP
-        mov     #U2_RPO_VALUE, W0         ; U1TX
+        mov     #U2_RPO_VALUE, W0         ; U2TX
         mov     W0, U2_RPO_REGISTER
 .endif
 .endif
@@ -1115,7 +1120,12 @@ WARM_ABAUD1:
 .endif
         mov     #BAUD_DIV2, W0
         mov     W0, U2BRG
-        bset    U2STA, #UTXEN
+.ifdecl URXEN
+	bset	U2STA,#URXEN
+.endif
+.ifdecl UTXEN
+        bset    U2STA,#UTXEN
+.endif
 
 .ifdecl AUTOBAUD2
 .if (AUTOBAUD2 == 1)
@@ -1978,7 +1988,7 @@ EEWRITE:
         rcall   wait_silence
         mov     #DPS_PAGE, W1
         mov     W1, TBLPAG
-.ifdecl PIC2433E
+.ifdecl NVMADRU
         mov     W1, NVMADRU
 .endif
         mov     [W14], W0
@@ -2005,7 +2015,7 @@ EEWRITE2:
 EEWRITE3:
         mov     #FLASH_WRITE_SINGLE, W1
         mov     W1, NVMCON
-.ifdecl PIC2433E
+.ifdecl NVMADR
         mov     W0, NVMADR
         mov     #0xfa, W1
         mov     W1, TBLPAG
@@ -2030,7 +2040,7 @@ EEERASE:
 .endif
         mov     #FLASH_ERASE, W0
         mov     W0, NVMCON
-.ifdecl PIC2433E
+.ifdecl NVMADR
         mov     #DPS_PAGE, W1
         mov     W1, NVMADRU
         mov     [W14], W1
@@ -2766,7 +2776,7 @@ RX2Q:
         mlit    XON
         rcall   TX2
 .else
-.if FC1_TYPE == 2
+.if FC2_TYPE == 2
         cp0     rbuf_lv2
         bra     nz, RX2Q1
         bclr    U2RTSPORT, #U2RTSPIN
