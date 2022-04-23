@@ -1103,8 +1103,8 @@ WARM_ABAUD1:
 .endif
 .ifdecl U2_RPO_REGISTER
 ; PIC2433EP
-        mov     #U2_RPO_VALUE, W0         ; U2TX
-        mov     W0, U2_RPO_REGISTER
+        mov	W0, #U2_RPO_VALUE          ; U2TX
+	ior	U2_RPO_REGISTER		; we need to ior here in case the reg isn't zero anymore
 .endif
 .endif
        bclr    PMD1, #U2MD
